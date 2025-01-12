@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visakhapatnam Tourism Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            height: 60%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #overlay {
+            width: 95%;
+            background-color: rgb(0, 0, 0);
+            color: white;
+            overflow-y: auto;
+            z-index:2;
+            padding: 20px;
+            box-shadow: 0 -2px 5px rgba(255, 234, 234, 0.1);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            max-height: 40%;
+            border-top-left-radius: 7px;
+            border-top-right-radius: 7px;
+        }
+
+        .location-details img {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+
+        #location-images img {
+            width: 100%;
+            height: auto;
+            max-height: 270px;
+            margin-top: 20px;
+            border-radius: 25px;
+        }
+
+        #location-geo, #location-elevation {
+            color: gold;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                flex-direction: row;
+                overflow: hidden;
+            }
+
+            #map {
+                position: relative;
+                height: 100vh;
+                width: 65%;
+                flex: none;
+                order: 2;
+            }
+
+            #overlay {
+                width: 35%;
+                height: 97vh;
+                max-height: 100%;
+                position: relative;
+                bottom: auto;
+                left: 0;
+                right: auto;
+                border-radius: 0;
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="overlay">
+        <h2 id="location-name"></h2>
+        <p id="location-elevation"></p>
+        <div id="location-images"></div>
+        <p id="location-description"></p>
+        <p id="location-geo"></p>
+    </div>
+</body>
+</html>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // map initialization from official leaflet website (provided in linkedin)
+        const map = L.map('map').setView([17.6868, 83.2185], 13);
+
+        // base maps
+        var Esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        });
+
+        var googleHybrid = L.tileLayer('http://{s}.google.com/vt?lyrs=s,h&x={x}&y={y}&z={z}',{
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+
+        var streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        });
+
+        var googleSat = L.tileLayer('http://{s}.google.com/vt?lyrs=s&x={x}&y={y}&z={z}',{
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+        var ahmedsat = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.{ext}', {
+	minZoom: 0,
+	maxZoom: 20,
+	attribution: '&copy; CNES, Distribution Airbus DS, © Airbus DS, © PlanetObserver (Contains Copernicus Data) | &copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	ext: 'jpg'
+});
+
+        // default base map (Google Hybrid)
+        const defaultBaseMap = googleHybrid;
+        defaultBaseMap.addTo(map);
+        var baseMaps = {
+            //"Satellite":ahmedsat,
+            "Google Hybrid Map": googleHybrid,
+            "Street Map OSM": streetMap,
+            "Esri World Map": Esri
+
+        };
+        
+
+        L.control.layers(baseMaps).addTo(map);
+        const locations = [
+            { name: "RK Beach", lat: 17.7142, lng: 83.3237, elevation: "Sea Level (0 meters)", description: "RK Beach, also known as Rama Krishna Beach, is a prominent attraction in Visakhapatnam, Andhra Pradesh. Located along the tranquil shores of the Bay of Bengal, it is renowned for its golden sands, gentle waves, and breathtaking sunrises and sunsets. Named after the nearby Ramakrishna Mission Ashram, this beach is not only a picturesque destination but also a place of cultural and historical significance. The Victory at Sea Memorial, situated on the beach, commemorates the Indian Navy's triumph during the 1971 Indo-Pak war. Visitors are also drawn to nearby attractions like the INS Kursura Submarine Museum, which offers insights into naval life, and the TU 142 Aircraft Museum, which houses a preserved Tupolev TU-142 aircraft. RK Beach is a lively hub of activity where people enjoy leisurely strolls, picnics, local delicacies, and recreational activities like kite flying and volleyball. The area is lined with eateries serving delectable seafood and traditional South Indian dishes, as well as souvenir shops offering local handicrafts. Easily accessible from the city center, the beach is best visited between October and March when the weather is pleasant. With its blend of natural beauty, cultural charm, and engaging activities, RK Beach is a must-visit destination in Visakhapatnam.", images: ["RK beach.jpg"] },
+            { name: "Kailasagiri", lat: 17.7499, lng: 83.3402, elevation: "130 meters", description: "Kailasagiri is a picturesque hilltop park and a popular tourist destination in Visakhapatnam, Andhra Pradesh. Perched at an altitude of 360 feet, it offers panoramic views of the Bay of Bengal, the sprawling city, and the lush greenery surrounding the area. The park is named after Lord Shiva and Goddess Parvati, whose massive white statues, standing at the hill’s summit, are a major attraction and symbolize peace and divinity. Kailasagiri is known for its serene ambiance, making it a perfect spot for relaxation and family outings.     The park is well-equipped with amenities and attractions, including well-maintained gardens, walking trails, and viewpoints. A major highlight is the ropeway ride, which provides a bird’s-eye view of the scenic landscape as visitors ascend or descend the hill. For adventure enthusiasts, there are trekking trails, while children can enjoy the play areas. The park also features a toy train that takes visitors on a delightful ride around the hill, offering captivating views of the surroundings.     Kailasagiri is home to a variety of sculptures, including the Floral Clock, one of the largest in India, and the Titanic Viewpoint, which is a favorite spot for photography. The park is also known for hosting cultural events and is a popular location for picnics and evening gatherings. Easily accessible by road and ropeway, Kailasagiri is an iconic landmark of Visakhapatnam and a must-visit destination for its scenic beauty, spiritual significance, and recreational activities.", images: ["kailasgiri.jpg"] },
+            { name: "INS Kurusura Submarine Museum", lat: 17.717175, lng: 83.329971, elevation: "Sea Level (0 meters)", description: "The INS Kursura Submarine Museum is a unique and iconic attraction located on RK Beach in Visakhapatnam, Andhra Pradesh. It is the first submarine museum in South Asia and one of the few in the world, offering visitors an extraordinary opportunity to explore the life of submariners. The museum is housed within the decommissioned INS Kursura (S20), a Soviet-built Foxtrot-class submarine that served the Indian Navy from 1969 to 2001. After its retirement, the submarine was converted into a museum to preserve its historical significance and educate the public about naval heritage.  Visitors to the museum can walk through the interiors of the submarine, gaining a firsthand experience of the confined and challenging conditions in which naval personnel operated during missions. The submarine’s compartments, including the torpedo room, control room, and crew quarters, have been preserved to provide an authentic glimpse into its operational life. The museum features exhibits showcasing photographs, artifacts, and detailed descriptions of the submarine's history, missions, and technological advancements  The INS Kursura played a crucial role in strengthening India's naval capabilities during its active service and remains a symbol of the country's maritime strength. The museum is staffed by retired navy personnel who guide visitors, sharing fascinating stories and insights about submarine warfare. Located against the scenic backdrop of RK Beach, the INS Kursura Submarine Museum is a must-visit destination for history enthusiasts, students, and tourists seeking to learn more about India’s naval legacy.", images: ["ins.jpg"] },
+            { name: "Araku Valley", lat: 18.3222, lng: 82.8802, elevation: "911 meters", description: "Araku Valley is a breathtaking hill station located in the Eastern Ghats of Andhra Pradesh, about 120 kilometers from Visakhapatnam. Nestled at an altitude of around 3,200 feet above sea level, this picturesque valley is renowned for its lush greenery, coffee plantations, misty hills, and pleasant weather, making it a perfect getaway for nature lovers and adventure seekers alike. The journey to Araku Valley is as mesmerizing as the destination itself, with winding roads, tunnels, and breathtaking views of the surrounding hills and forests."+"The valley is famous for its coffee, with the Araku Coffee brand gaining international recognition for its organic and rich flavor. Visitors can explore the coffee plantations and even witness the coffee-making process at the Coffee Museum. Another major attraction is the Tribal Museum, which offers insights into the lifestyle, culture, and traditions of the indigenous tribes of the region."+"Nature lovers will be enchanted by the valley’s stunning landscapes, including waterfalls like the famous Chaparai Waterfalls and the tranquil Sangda Waterfalls. The Borra Caves, located nearby, are a must-visit site, featuring stalactite and stalagmite formations that are millions of years old. For adventure enthusiasts, the valley offers opportunities for trekking and camping amidst its serene environment"+"Araku Valley is also known for its vibrant tribal festivals, local handicrafts, and authentic Andhra cuisine. Its cool climate, pristine environment, and diverse attractions make it a popular destination for tourists seeking a serene and rejuvenating retreat", images: ["Araku.jpg"] },
+            { name: "Borra Caves", lat: 18.2807, lng: 83.0397, elevation: "705 meters", description: "Borra Caves, located in the Ananthagiri Hills of the Eastern Ghats, are one of the largest and most spectacular cave systems in India. Situated about 90 kilometers from Visakhapatnam and near Araku Valley, these limestone caves are a natural wonder formed over millions of years due to the action of water on limestone deposits. The caves are perched at an elevation of approximately 1,400 meters above sea level and are a must-visit attraction for nature lovers, history enthusiasts, and adventurers. The caves are famous for their stunning stalactite and stalagmite formations, which have taken on fascinating shapes that spark the imagination of visitors. Many formations are associated with mythological and animal shapes, such as a Shiva Lingam, a human brain, and even a crocodile. The caves are illuminated with artificial lighting, which enhances the beauty of the natural formations, casting intriguing shadows and creating a mystical atmosphere.  Borra Caves are also significant for their historical and spiritual relevance. Local folklore associates the caves with Lord Shiva and the Lingam formation within the cave, making it a site of religious importance. The Gosthani River originates in the caves, adding to their ecological significance.  Exploring the caves involves a descent into their depths, with narrow passages, steep stairs, and spacious chambers. The cool, damp air and natural acoustics inside the caves make the experience truly unique. The surrounding area is lush with greenery and offers stunning views of the Ananthagiri Hills, making it a perfect spot for photography and nature walks", images: ["borra.jpg"] },
+            { name: "Yarada Beach", lat: 17.6549, lng: 83.2692, elevation: "Sea Level (0 meters)", description: "Yarada Beach is a serene and relatively less crowded beach located about 15 kilometers from the city center of Visakhapatnam, Andhra Pradesh. Nestled between lush green hills and the Bay of Bengal, this pristine beach offers a peaceful escape from the bustling city life. Known for its golden sands, clear waters, and scenic surroundings, Yarada Beach is a favorite among nature lovers and those seeking tranquility.   The beach is surrounded by hills on three sides, creating a secluded and calm atmosphere, ideal for relaxing, picnicking, and enjoying the natural beauty. The gentle waves and clean shoreline make it a perfect spot for a peaceful walk or a casual swim. The beach is also less commercialized, allowing visitors to experience a more authentic and untouched environment compared to the more popular beaches in Visakhapatnam.  One of the highlights of Yarada Beach is its stunning view of the sunrise, as the sun rises over the hills and paints the sky in vibrant hues. The beach is also a great place for photography, with its beautiful landscape and the backdrop of the hills. While the beach is relatively quiet, there are a few local vendors selling snacks and drinks, offering a taste of the local cuisine.   Yarada Beach is also home to some important landmarks, including the Yarada Hill, which offers panoramic views of the beach and the surrounding areas. The beach is accessible by road and is a short drive from the city, making it an ideal destination for a weekend getaway or a peaceful retreat close to Visakhapatnam.", images: ["yarada.jpg"] },
+            { name: "Dolphin's Nose", lat: 17.6765, lng: 83.2926, elevation: "358 meters", description: "Dolphin's Nose is a prominent hill and a popular tourist destination located in Visakhapatnam, Andhra Pradesh. It is named after its distinctive shape, which resembles the nose of a dolphin when viewed from a distance. Standing at an elevation of about 358 meters above sea level, Dolphin’s Nose offers panoramic views of the Bay of Bengal, the surrounding coastline, and the bustling city of Visakhapatnam. The viewpoint is located at a strategic location, offering a unique perspective of the city's landscape.   The most striking feature of Dolphin’s Nose is the lighthouse situated atop the hill. The lighthouse, which has been in operation since 1960, guides ships navigating the coastal waters of the Bay of Bengal, making it an important part of the region’s maritime infrastructure. Visitors can enjoy breathtaking views of the sea, beaches, and the city’s coastline from the top, with the vast expanse of water meeting the sky on the horizon. On clear days, one can also spot ships in the distance, making it a perfect spot for photography and sightseeing.   The hilltop is accessible by road, and the area around the lighthouse is well-maintained for visitors, offering an enjoyable experience of both natural beauty and maritime history. Dolphin's Nose is an ideal spot for a peaceful retreat, with cool breezes and stunning vistas, especially during the early morning or late evening hours. It is a must-visit location for anyone exploring Visakhapatnam, offering a combination of scenic beauty, history, and tranquility.", images: ["dolp.jpg"] },
+            { name: "Kambalakonda Wildlife Sanctuary", lat: 17.7778, lng: 83.3366, elevation: "120 meters", description: "Kambalkonda Wildlife Sanctuary is a serene and beautiful wildlife reserve located about 15 kilometers from Visakhapatnam, Andhra Pradesh. Situated in the Eastern Ghats, this sanctuary spans across an area of approximately 7,130 hectares and is known for its rich biodiversity, lush greenery, and scenic landscapes. The sanctuary is nestled between the picturesque Kambalkonda and surrounding hills, offering a peaceful retreat for nature lovers, wildlife enthusiasts, and those seeking to escape the hustle and bustle of the city.  The sanctuary is home to a wide variety of flora and fauna, including several species of mammals, birds, reptiles, and insects. Some of the prominent wildlife species found in Kambalkonda include spotted deer, blackbucks, wild boars, langurs, and several species of snakes and reptiles. The sanctuary also provides a safe haven for a range of bird species, making it a popular spot for birdwatching. The rich vegetation includes deciduous forests, which are home to a variety of medicinal plants and trees.  Kambalkonda is not just a wildlife sanctuary but also a popular eco-tourism destination. The area offers various trekking trails, allowing visitors to explore the sanctuary on foot and enjoy the scenic beauty of the hills, valleys, and dense forests. The peaceful environment, coupled with the sounds of nature, makes it a perfect place for nature walks, picnics, and photography.", images: ["kambal.jpg"] },
+            { name: "Thotlakonda Buddhist Complex", lat: 17.8285, lng: 83.4092, elevation: "128 meters", description: "Totlakonda is an ancient Buddhist site located on a hilltop along the picturesque coastline of the Bay of Bengal, about 20 kilometers from Visakhapatnam, Andhra Pradesh. The name Totlakonda translates to hill of the monk in Telugu, reflecting its historical significance as a prominent Buddhist monastic center during the 3rd to 6th centuries AD.   The site is known for its well-preserved Buddhist remains, including ancient stupas, relic caskets, and inscriptions. The hilltop offers a stunning view of the surrounding landscape, including lush greenery, the coastline, and the sea, making it a serene and tranquil spot for visitors. The main attraction is the large stupa located at the top, which is believed to have been a center for Buddhist monks and pilgrims. Several smaller stupas and monastic cells can also be found scattered across the area, indicating the importance of the site as a Buddhist center. Totlakonda is part of the Buddhist Circuit in Andhra Pradesh, which also includes other significant sites like Bavikonda, Thotlakonda, and Peddabuddha Konda. These sites collectively offer a glimpse into the rich Buddhist heritage of the region. Totlakonda's scenic location, historical significance, and peaceful surroundings make it a popular destination for both history buffs and nature lovers.", images: ["totla.jpg"] },
+            { name: "VUDA Park", lat: 17.7241, lng: 83.3395, elevation: "Sea Level (0 meters)", description: "VUDA Park, also known as Visakhapatnam Urban Development Authority Park, is a well-maintained and popular recreational park located in the heart of Visakhapatnam, Andhra Pradesh, near the beach. It offers a refreshing and peaceful atmosphere for locals and tourists alike, making it an ideal spot for relaxation, family outings, and leisurely walks. The park is spread over a large area and is known for its lush greenery, well-manicured lawns, and a variety of plant species that contribute to its scenic beauty.  One of the major attractions of VUDA Park is its stunning location, situated near the coast and offering a beautiful view of the sea. The park features numerous walking tracks, children's play areas, and open spaces for outdoor activities. It also includes a boating facility on a serene lake within the park, where visitors can enjoy a peaceful boat ride surrounded by nature. The park is designed to cater to a wide range of visitors, with designated areas for picnics, sports, and relaxation. There are numerous benches and shaded spots where visitors can sit and enjoy the cool breeze, making it a popular spot for morning joggers and evening walkers. The park also features an amphitheater where cultural programs, events, and performances are occasionally held, adding to its vibrant atmosphere.", images: ["vuda.jpg"] },
+            { name: "Rushikonda Beach", lat: 17.7925, lng: 83.3842, elevation: "Sea Level (0 meters)", description: "Rushikonda is a beautiful and popular beach located about 8 kilometers from Visakhapatnam, Andhra Pradesh. Known for its clean, golden sands and clear blue waters, Rushikonda Beach is a favorite among locals and tourists for relaxation, water sports, and scenic views. The beach is nestled between rolling hills, which add to its natural beauty, and it offers a serene environment away from the more crowded beaches in Visakhapatnam.    The beach is well-maintained and is ideal for swimming, beach walks, and sunbathing. Rushikonda is also famous for its water sports activities, such as jet skiing, windsurfing, and parasailing, making it a popular destination for adventure enthusiasts. The gentle waves and the relatively uncrowded nature of the beach make it a perfect spot for a peaceful retreat as well.   The surrounding landscape, with its lush green hills and coconut groves, offers a tranquil setting for visitors. The beach also has a number of cafes and eateries nearby, where visitors can enjoy local delicacies, seafood, and refreshing drinks with a view of the ocean. For those seeking a more active experience, there are options for beach volleyball and other sports.  Rushikonda is a great place to visit during the morning or evening, as the early morning light creates a picturesque view, and the sunset is equally stunning, casting vibrant colors over the horizon. The beach is easily accessible by road, and its close proximity to the city center makes it an ideal spot for a day trip.", images: ["rushi.jpg"] },
+            { name: "Bheemili Beach", lat: 17.8903, lng: 83.4559, elevation: "Sea Level (0 meters)", description: "Bhimili (or Bheemunipatnam) is a historic town located about 24 kilometers from Visakhapatnam, Andhra Pradesh, at the confluence of the Gosthani River and the Bay of Bengal. Known for its rich history, beautiful beaches, and serene environment, Bhimili is a popular destination for history enthusiasts, nature lovers, and those looking for a peaceful getaway.  One of the major attractions of Bhimili is its Bhimili Beach, which is less crowded compared to other beaches in the region. The beach is known for its clean sands, calm waters, and scenic beauty, making it an ideal spot for a quiet day by the sea. The beach is perfect for leisurely walks, picnics, and sunset views, providing a serene atmosphere for relaxation.   Bhimili has a historical significance, with roots tracing back to ancient times. It was once a bustling port during the Dutch colonial era, and remnants of its past can still be seen today. The Bheemili Fort, a structure built by the Dutch in the 17th century, stands as a reminder of the town’s colonial history. The fort, though in ruins, is an important historical site and offers a glimpse into the region's colonial architecture and past.  Apart from its beach and historical sites, Bhimili is also known for its ancient temples, including the Sri Sarada Temple and the Bheemeshwara Swamy Temple, both of which hold cultural and religious importance. The town is surrounded by lush green landscapes and provides a peaceful escape from the more bustling areas of Visakhapatnam.", images: ["bhim.jpg"] },
+            { name: "Katiki Waterfalls", lat: 18.2792, lng: 82.9988, elevation: "500 meters", description: "Katiki Waterfalls is a beautiful and serene waterfall located in the Ananthagiri Hills, about 50 kilometers from Visakhapatnam, Andhra Pradesh. Situated near the village of Katiki, this picturesque waterfall is one of the lesser-known but stunning natural attractions in the region, making it a hidden gem for nature lovers and adventure enthusiasts.  The waterfall cascades from a height of approximately 50 feet, flowing over rocky terrain and surrounded by lush greenery and dense forests. The area around the waterfall is filled with rich vegetation, making it a perfect spot for trekking and hiking. The trek to Katiki Waterfalls is an exciting one, as visitors have to navigate through rocky paths and forested areas, adding a sense of adventure to the experience.  Once you reach the waterfall, you are greeted with a breathtaking sight of water gushing down the rocks, creating a refreshing spray. The cool, clear waters of the waterfall offer a perfect place for visitors to relax, take a dip, or simply enjoy the natural beauty of the surroundings. The sound of the cascading water, combined with the peaceful environment, makes it an ideal location for photography, nature walks, and picnics.  The best time to visit Katiki Waterfalls is during the monsoon season (June to September), when the waterfall is at its most majestic, with full-flowing water and vibrant greenery around. However, the site is accessible year-round, and it remains a popular weekend getaway for locals and tourists alike who seek a peaceful retreat in the lap of nature.", images: ["Katiki image 1.jpg"] },
+            { name: "Indira Gandhi Zoological Park", lat: 17.7657, lng: 83.3488, elevation: "62 meters", description: "Indira Gandhi Zoological Park, commonly known as Vizag Zoo, is one of the largest zoological parks in India, located in Visakhapatnam, Andhra Pradesh. Spread across 625 acres, this well-maintained park is home to a wide variety of wildlife, including mammals, birds, reptiles, and aquatic species, making it a popular destination for both locals and tourists.  The zoo is situated near Kailasagiri Hill, offering visitors a peaceful and scenic environment amidst lush greenery. It was inaugurated in 1977 and has since been a major attraction, offering a chance to observe and learn about various species in naturalistic habitats. The zoo is divided into different sections, each housing specific animals and birds, providing a structured and educational experience for visitors.  The zoo is known for its conservation efforts, research activities, and educational programs aimed at creating awareness about wildlife and the environment. Additionally, its proximity to scenic locations like Kailasagiri enhances the overall visitor experience, making Indira Gandhi Zoological Park a must-visit destination for families, school groups, and wildlife enthusiasts visiting Visakhapatnam.", images: ["zoo.jpg"] }
+        ];
+        locations.forEach(loc => {
+            const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+            marker.bindPopup(loc.name);
+            marker.on('click', () => {
+                document.getElementById('location-name').innerText = loc.name;
+                document.getElementById('location-description').innerText = loc.description;
+                document.getElementById('location-geo').innerText = "Coordinates: " + loc.lat + ", " + loc.lng;
+                document.getElementById('location-elevation').innerText = "Elevation: " + loc.elevation;
+
+                // Display images
+                const imageContainer = document.getElementById('location-images');
+                imageContainer.innerHTML = ''; // Clear any previous images
+                loc.images.forEach(img => {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = img;
+                    imgElement.alt = loc.name;
+                    imageContainer.appendChild(imgElement);
+                });
+                const offsetLng = 0.0005;
+                map.setView([loc.lat, loc.lng - offsetLng], 15);
+            });
+        });
+function setDefaultOverlayContent() {
+    document.getElementById('location-name').innerText = "Welcome to Visakhapatnam - The City of Destiny!";
+    document.getElementById('location-description').innerText = "Visakhapatnam, commonly known as Vizag, is a bustling port city located on the southeastern coast of India, in the state of Andhra Pradesh. Surrounded by the Bay of Bengal to the east and the Eastern Ghats to the west, Vizag is renowned for its natural beauty, vibrant culture, and historical significance. The city, often referred to as The Jewel of the East Coast, has become a prominent destination for both domestic and international tourists due to its diverse attractions, serene beaches, and scenic landscapes.   Vizag’s unique blend of natural beauty, historical sites, modern attractions, and tranquil beaches makes it a must-visit destination for tourists looking to explore India’s eastern coast. Whether you're interested in adventure, culture, history, or simply relaxing in nature, Vizag offers something for everyone.";
+    
+    document.getElementById('location-geo').innerText = "EXPLORE VARIOUS TOURIST SPOTS BY SIMPLY CLICKING ON MARKER OF INTEREST.";
+    document.getElementById('location-elevation').innerText = "";
+    const imageContainer = document.getElementById('location-images');
+    imageContainer.innerHTML = ''; 
+    const defaultImage = document.createElement('img');
+    defaultImage.src = "vizag.jpg";
+    defaultImage.alt = "Visakhapatnam Overview";
+    imageContainer.appendChild(defaultImage);
+}
+
+// Initialize default content on page load
+setDefaultOverlayContent();
+
+        // Fit all markers to the screen, adjusted for the overlay on the left
+        const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
+        const padding = {
+            left: Math.round(window.innerWidth * 0.1), // Approx. 40% for the overlay
+            right: 10,
+            top: 50,
+            bottom: 50
+        };
+        map.fitBounds(bounds, { paddingTopLeft: [padding.left, padding.top] });
+    </script>
+</body>
+</html>
