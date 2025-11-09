@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Visakhapatnam Tourism Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
@@ -14,6 +14,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         #map {
@@ -40,6 +41,25 @@
             max-height: 40%;
             border-top-left-radius: 7px;
             border-top-right-radius: 7px;
+        }
+
+        /* NEW: Header inside overlay (keeps everything else the same) */
+        .overlay-header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .overlay-header .map-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: gold;
+            letter-spacing: 0.6px;
+        }
+        .overlay-header .map-credit {
+            font-size: 0.9rem;
+            color: #dddddd;
+            opacity: 0.95;
         }
 
         .location-details img {
@@ -89,15 +109,20 @@
 </head>
 <body>
     <div id="map"></div>
+
     <div id="overlay">
+        <!-- NEW HEADER (inside overlay so layout & spacing remain unchanged) -->
+        <div class="overlay-header" aria-hidden="false">
+            <div class="map-title">Visakhapatnam Tourism Map</div>
+            <div class="map-credit">Map created by <strong>Mukeem Thoufiq Ahmed</strong>, 4/4 B. Tech</div>
+        </div>
+
         <h2 id="location-name"></h2>
         <p id="location-elevation"></p>
         <div id="location-images"></div>
         <p id="location-description"></p>
         <p id="location-geo"></p>
     </div>
-</body>
-</html>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
@@ -124,11 +149,11 @@
             subdomains:['mt0','mt1','mt2','mt3']
         });
         var ahmedsat = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.{ext}', {
-	minZoom: 0,
-	maxZoom: 20,
-	attribution: '&copy; CNES, Distribution Airbus DS, © Airbus DS, © PlanetObserver (Contains Copernicus Data) | &copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-	ext: 'jpg'
-});
+            minZoom: 0,
+            maxZoom: 20,
+            attribution: '&copy; CNES, Distribution Airbus DS, © Airbus DS, © PlanetObserver (Contains Copernicus Data) | &copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            ext: 'jpg'
+        });
 
         // default base map (Google Hybrid)
         const defaultBaseMap = googleHybrid;
@@ -138,9 +163,7 @@
             "Google Hybrid Map": googleHybrid,
             "Street Map OSM": streetMap,
             "Esri World Map": Esri
-
         };
-        
 
         L.control.layers(baseMaps).addTo(map);
         const locations = [
@@ -159,6 +182,7 @@
             { name: "Katiki Waterfalls", lat: 18.2792, lng: 82.9988, elevation: "500 meters", description: "Katiki Waterfalls is a beautiful and serene waterfall located in the Ananthagiri Hills, about 50 kilometers from Visakhapatnam, Andhra Pradesh. Situated near the village of Katiki, this picturesque waterfall is one of the lesser-known but stunning natural attractions in the region, making it a hidden gem for nature lovers and adventure enthusiasts.  The waterfall cascades from a height of approximately 50 feet, flowing over rocky terrain and surrounded by lush greenery and dense forests. The area around the waterfall is filled with rich vegetation, making it a perfect spot for trekking and hiking. The trek to Katiki Waterfalls is an exciting one, as visitors have to navigate through rocky paths and forested areas, adding a sense of adventure to the experience.  Once you reach the waterfall, you are greeted with a breathtaking sight of water gushing down the rocks, creating a refreshing spray. The cool, clear waters of the waterfall offer a perfect place for visitors to relax, take a dip, or simply enjoy the natural beauty of the surroundings. The sound of the cascading water, combined with the peaceful environment, makes it an ideal location for photography, nature walks, and picnics.  The best time to visit Katiki Waterfalls is during the monsoon season (June to September), when the waterfall is at its most majestic, with full-flowing water and vibrant greenery around. However, the site is accessible year-round, and it remains a popular weekend getaway for locals and tourists alike who seek a peaceful retreat in the lap of nature.", images: ["Katiki image 1.jpg"] },
             { name: "Indira Gandhi Zoological Park", lat: 17.7657, lng: 83.3488, elevation: "62 meters", description: "Indira Gandhi Zoological Park, commonly known as Vizag Zoo, is one of the largest zoological parks in India, located in Visakhapatnam, Andhra Pradesh. Spread across 625 acres, this well-maintained park is home to a wide variety of wildlife, including mammals, birds, reptiles, and aquatic species, making it a popular destination for both locals and tourists.  The zoo is situated near Kailasagiri Hill, offering visitors a peaceful and scenic environment amidst lush greenery. It was inaugurated in 1977 and has since been a major attraction, offering a chance to observe and learn about various species in naturalistic habitats. The zoo is divided into different sections, each housing specific animals and birds, providing a structured and educational experience for visitors.  The zoo is known for its conservation efforts, research activities, and educational programs aimed at creating awareness about wildlife and the environment. Additionally, its proximity to scenic locations like Kailasagiri enhances the overall visitor experience, making Indira Gandhi Zoological Park a must-visit destination for families, school groups, and wildlife enthusiasts visiting Visakhapatnam.", images: ["zoo.jpg"] }
         ];
+
         locations.forEach(loc => {
             const marker = L.marker([loc.lat, loc.lng]).addTo(map);
             marker.bindPopup(loc.name);
@@ -181,22 +205,23 @@
                 map.setView([loc.lat, loc.lng - offsetLng], 15);
             });
         });
-function setDefaultOverlayContent() {
-    document.getElementById('location-name').innerText = "Welcome to Visakhapatnam - The City of Destiny!";
-    document.getElementById('location-description').innerText = "Visakhapatnam, commonly known as Vizag, is a bustling port city located on the southeastern coast of India, in the state of Andhra Pradesh. Surrounded by the Bay of Bengal to the east and the Eastern Ghats to the west, Vizag is renowned for its natural beauty, vibrant culture, and historical significance. The city, often referred to as The Jewel of the East Coast, has become a prominent destination for both domestic and international tourists due to its diverse attractions, serene beaches, and scenic landscapes.   Vizag’s unique blend of natural beauty, historical sites, modern attractions, and tranquil beaches makes it a must-visit destination for tourists looking to explore India’s eastern coast. Whether you're interested in adventure, culture, history, or simply relaxing in nature, Vizag offers something for everyone.";
-    
-    document.getElementById('location-geo').innerText = "EXPLORE VARIOUS TOURIST SPOTS BY SIMPLY CLICKING ON MARKER OF INTEREST.";
-    document.getElementById('location-elevation').innerText = "";
-    const imageContainer = document.getElementById('location-images');
-    imageContainer.innerHTML = ''; 
-    const defaultImage = document.createElement('img');
-    defaultImage.src = "vizag.jpg";
-    defaultImage.alt = "Visakhapatnam Overview";
-    imageContainer.appendChild(defaultImage);
-}
 
-// Initialize default content on page load
-setDefaultOverlayContent();
+        function setDefaultOverlayContent() {
+            document.getElementById('location-name').innerText = "Welcome to Visakhapatnam - The City of Destiny!";
+            document.getElementById('location-description').innerText = "Visakhapatnam, commonly known as Vizag, is a bustling port city located on the southeastern coast of India, in the state of Andhra Pradesh. Surrounded by the Bay of Bengal to the east and the Eastern Ghats to the west, Vizag is renowned for its natural beauty, vibrant culture, and historical significance. The city, often referred to as The Jewel of the East Coast, has become a prominent destination for both domestic and international tourists due to its diverse attractions, serene beaches, and scenic landscapes.   Vizag’s unique blend of natural beauty, historical sites, modern attractions, and tranquil beaches makes it a must-visit destination for tourists looking to explore India’s eastern coast. Whether you're interested in adventure, culture, history, or simply relaxing in nature, Vizag offers something for everyone.";
+            
+            document.getElementById('location-geo').innerText = "EXPLORE VARIOUS TOURIST SPOTS BY SIMPLY CLICKING ON MARKER OF INTEREST.";
+            document.getElementById('location-elevation').innerText = "";
+            const imageContainer = document.getElementById('location-images');
+            imageContainer.innerHTML = ''; 
+            const defaultImage = document.createElement('img');
+            defaultImage.src = "vizag.jpg";
+            defaultImage.alt = "Visakhapatnam Overview";
+            imageContainer.appendChild(defaultImage);
+        }
+
+        // Initialize default content on page load
+        setDefaultOverlayContent();
 
         // Fit all markers to the screen, adjusted for the overlay on the left
         const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
